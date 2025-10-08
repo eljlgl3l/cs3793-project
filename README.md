@@ -1,8 +1,7 @@
 ## Setup
 
 ### Windows
-
-```console
+```bash
 git clone <repo>
 cd <repo>
 python -m venv venv
@@ -12,7 +11,7 @@ python train.py
 ```
 
 ### Unix
-```shell
+```bash
 git clone <repo>
 cd <repo>
 python3 -m venv venv
