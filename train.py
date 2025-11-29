@@ -6,6 +6,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 from torch.utils.data import DataLoader, random_split
 import torchvision
+from torchvision import transforms
 import random
 
 # Load dataset
@@ -56,8 +57,16 @@ model = NeuralNetwork()
 criterion = torch.nn.CrossEntropyLoss()
 optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
 
+train_losses = []
+train_accuracies = []
+val_losses = []
+val_accuracies = []
+best_val_acc = 0.0
+
 def train_model ():
-# Training loop - loops for number of times we iterate through the dataset
+    global best_val_acc
+
+    # Training loop - loops for number of times we iterate through the dataset
     for i in range(35):
         running_loss = 0.0
         correct = 0
@@ -104,7 +113,36 @@ def train_model ():
 
         print(f'Epoch {i + 1}, Train loss: {train_loss:.3f}, Train acc: {train_acc:.2f}%, Val loss: {val_loss:.3f}, Val acc: {val_acc:.2f}%')
 
+        if val_acc > best_val_acc:
+            best_val_acc = val_acc
+            torch.save(model.state_dict(), 'best_model.pth')
+            print (f'saved best model with val acc: {best_val_acc:.2f}%')
+
+        train_losses.append(train_loss)
+        train_accuracies.append(train_acc)
+        val_losses.append(val_loss)
+        val_accuracies.append(val_acc)
+
+    plt.figure(figsize=(12, 5))
+    plt.subplot(1, 2, 1)
+    plt.plot(train_losses, label='Train Loss')
+    plt.plot(val_losses, label='Validation Loss')
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.legend()
+
+    plt.subplot(1, 2, 2)
+    plt.plot(train_accuracies, label='Train Accuracy')
+    plt.plot(val_accuracies, label='Validation Accuracy')
+    plt.xlabel('Epoch')
+    plt.ylabel('Accuracy (%)')
+    plt.legend()
+
+
 def test_model ():
+    checkpoint = torch.load('best_model.pth')
+    model.load_state_dict(checkpoint)
+
     model.eval()
     correct = 0
     total = 0
